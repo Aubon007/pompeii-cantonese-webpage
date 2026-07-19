@@ -294,8 +294,9 @@ footer p {
 
 /* Swipeable image strips: four storyboard pictures per section scroll horizontally. */
 .visual-grid {
-  display: flex;
-  grid-template-columns: none;
+  display: flex !important;
+  flex-wrap: nowrap;
+  grid-template-columns: none !important;
   gap: 16px;
   overflow-x: auto;
   overflow-y: hidden;
@@ -320,13 +321,15 @@ footer p {
 }
 
 .visual-card {
-  flex: 0 0 min(78vw, 286px);
+  flex: 0 0 min(82vw, 360px);
+  min-width: min(82vw, 360px);
   scroll-snap-align: start;
 }
 
 @media (min-width: 1100px) {
   .visual-card {
-    flex-basis: calc((100% - 48px) / 4);
+    flex-basis: 360px;
+    min-width: 360px;
   }
 }
 
@@ -339,5 +342,6 @@ footer p {
 
   .visual-card {
     flex-basis: 82vw;
+    min-width: 82vw;
   }
 }
