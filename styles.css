@@ -291,3 +291,53 @@ footer p {
     padding: 18px;
   }
 }
+
+/* Swipeable image strips: four storyboard pictures per section scroll horizontally. */
+.visual-grid {
+  display: flex;
+  grid-template-columns: none;
+  gap: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 4px 16px;
+  margin-inline: -4px;
+  scroll-snap-type: x mandatory;
+  scrollbar-color: var(--rust) rgba(166, 79, 43, 0.14);
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.visual-grid::-webkit-scrollbar {
+  height: 9px;
+}
+
+.visual-grid::-webkit-scrollbar-track {
+  background: rgba(166, 79, 43, 0.14);
+}
+
+.visual-grid::-webkit-scrollbar-thumb {
+  background: var(--rust);
+}
+
+.visual-card {
+  flex: 0 0 min(78vw, 286px);
+  scroll-snap-align: start;
+}
+
+@media (min-width: 1100px) {
+  .visual-card {
+    flex-basis: calc((100% - 48px) / 4);
+  }
+}
+
+@media (max-width: 620px) {
+  .visual-grid {
+    width: calc(100% + 24px);
+    margin-right: -12px;
+    padding-right: 12px;
+  }
+
+  .visual-card {
+    flex-basis: 82vw;
+  }
+}
