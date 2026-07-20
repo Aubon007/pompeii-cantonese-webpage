@@ -26,6 +26,39 @@
       </div>
     </header>
 
+
+    <section class="converter" aria-labelledby="converter-title">
+      <div class="converter__header">
+        <p class="eyebrow">Written Chinese → Spoken Cantonese</p>
+        <h2 id="converter-title">書面中文轉口語廣東話</h2>
+        <p>貼上文字，或上載純文字檔案，勾選確認後即可產生口語廣東話初稿。</p>
+      </div>
+      <div class="converter__grid">
+        <div class="converter__panel">
+          <label for="sourceText">輸入書面中文</label>
+          <textarea id="sourceText" rows="10" placeholder="在這裡貼上書面中文內容，或使用下方按鈕上載 .txt 檔案。"></textarea>
+          <div class="converter__actions">
+            <label class="file-button" for="textUpload">上載文字檔</label>
+            <input id="textUpload" type="file" accept=".txt,text/plain" />
+            <button id="clearText" type="button">清除</button>
+          </div>
+          <label class="confirm-row">
+            <input id="confirmConvert" type="checkbox" />
+            <span>我確認要將以上書面中文轉換成口語廣東話。</span>
+          </label>
+          <button id="convertText" class="convert-button" type="button" disabled>轉換成口語廣東話</button>
+        </div>
+        <div class="converter__panel converter__panel--result">
+          <label for="spokenText">轉換結果</label>
+          <textarea id="spokenText" rows="10" readonly placeholder="勾選確認並按下轉換後，結果會顯示在這裡。"></textarea>
+          <div class="converter__actions">
+            <button id="copySpoken" type="button">複製結果</button>
+            <span id="convertStatus" aria-live="polite"></span>
+          </div>
+          <p class="converter__note">此工具使用內建規則轉換，適合作為廣東話 TTS 初稿；正式發布前仍建議人工校對語氣和用字。</p>
+        </div>
+      </div>
+    </section>
     <main>
       <section class="chapter" id="part-1">
         <div class="chapter__intro">
@@ -235,5 +268,82 @@
     <footer>
       <p>MP3 由本機 Cantonese MP3 Maker 匯出，使用 Microsoft Edge Cantonese TTS。圖片主要來自 Wikimedia Commons；每張圖片下方已附來源連結。</p>
     </footer>
+
+    <script>
+      const conversionRules = [
+        ['這個', '呢個'], ['這些', '呢啲'], ['這種', '呢種'], ['這座', '呢座'], ['這裡', '呢度'], ['現在', '而家'],
+        ['他們', '佢哋'], ['她們', '佢哋'], ['它們', '佢哋'], ['我們', '我哋'], ['你們', '你哋'],
+        ['以及', '同埋'], ['與', '同'], ['和', '同'], ['但是', '但係'], ['卻', '但係'], ['因此', '所以'],
+        ['因為', '因為'], ['如果', '如果'], ['可能', '可能'], ['逐漸', '慢慢'], ['正在', '正喺度'], ['進行', '做緊'],
+        ['前往', '去'], ['使用', '用'], ['呈現', '呈現'], ['展示', '展示'], ['說明', '說明'], ['成為', '成為'],
+        ['可以', '可以'], ['能夠', '可以'], ['無法', '冇辦法'], ['不得', '唔可以'], ['尚未', '仲未'], ['並非', '唔係'],
+        ['首先', '首先'], ['接著', '跟住'], ['之後', '之後'], ['最後', '最後'], ['主要', '主要'], ['重要', '重要'],
+        ['居民', '居民'], ['城市', '城市'], ['浴場', '浴場'], ['空間', '空間'], ['系統', '系統'], ['工程', '工程'],
+        ['的', '嘅'], ['了', '咗'], ['在', '喺'], ['是', '係'], ['不', '唔'], ['沒有', '冇'], ['著', '住']
+      ];
+
+      function convertToCantonese(input) {
+        let text = input.trim();
+        if (!text) return '';
+        for (const [written, spoken] of conversionRules) {
+          text = text.split(written).join(spoken);
+        }
+        text = text
+          .replace(/西元\s*(\d+)\s*年/g, '公元 $1 年')
+          .replace(/約/g, '大約')
+          .replace(/一座/g, '一座')
+          .replace(/。/g, '。\n')
+          .replace(/\n{2,}/g, '\n')
+          .trim();
+        return text;
+      }
+
+      const sourceText = document.getElementById('sourceText');
+      const spokenText = document.getElementById('spokenText');
+      const confirmConvert = document.getElementById('confirmConvert');
+      const convertText = document.getElementById('convertText');
+      const textUpload = document.getElementById('textUpload');
+      const clearText = document.getElementById('clearText');
+      const copySpoken = document.getElementById('copySpoken');
+      const convertStatus = document.getElementById('convertStatus');
+
+      function updateConvertState() {
+        convertText.disabled = !confirmConvert.checked || !sourceText.value.trim();
+      }
+
+      confirmConvert.addEventListener('change', updateConvertState);
+      sourceText.addEventListener('input', updateConvertState);
+
+      textUpload.addEventListener('change', async (event) => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        sourceText.value = await file.text();
+        convertStatus.textContent = `已載入：${file.name}`;
+        updateConvertState();
+      });
+
+      clearText.addEventListener('click', () => {
+        sourceText.value = '';
+        spokenText.value = '';
+        textUpload.value = '';
+        confirmConvert.checked = false;
+        convertStatus.textContent = '';
+        updateConvertState();
+      });
+
+      convertText.addEventListener('click', () => {
+        spokenText.value = convertToCantonese(sourceText.value);
+        convertStatus.textContent = '已完成轉換';
+      });
+
+      copySpoken.addEventListener('click', async () => {
+        if (!spokenText.value.trim()) {
+          convertStatus.textContent = '沒有可複製的內容';
+          return;
+        }
+        await navigator.clipboard.writeText(spokenText.value);
+        convertStatus.textContent = '已複製結果';
+      });
+    </script>
   </body>
 </html>
